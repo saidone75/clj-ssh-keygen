@@ -1,6 +1,4 @@
-/target
-/classes
-/checkouts
+*~
 profiles.clj
 pom.xml
 pom.xml.asc
@@ -8,5 +6,12 @@ pom.xml.asc
 *.class
 /.lein-*
 /.nrepl-port
-.hgignore
-.hg/
+/lib/
+/classes/
+/target/
+/checkouts/
+.lein-deps-sum
+.lein-repl-history
+.lein-plugins/
+.lein-failures
+.cpcache/
