@@ -34,11 +34,6 @@
                           (.subtract q BigInteger/ONE)))]
     {:e e :p p :q q :n n :d d}))
 
-(defn- ubyte->byte [b]
-  (if (>= b 128)
-    (byte (- b 256))
-    (byte b)))
-
 (defn- asn1-int [n]
   (let [n (.toByteArray n)]
     (byte-array
@@ -46,18 +41,18 @@
       [(byte 2)]
       (cond
         (< (count n) 128) [(unchecked-byte (count n))]
-        (and (> (count n) 127) (< (count n) 256)) (concat [(byte (ubyte->byte 0x81))] [(unchecked-byte (count n))])
-        :else (concat [(byte (ubyte->byte 0x82))] (.toByteArray (BigInteger/valueOf (count n)))))
+        (and (> (count n) 127) (< (count n) 256)) (concat [(unchecked-byte 0x81)] [(unchecked-byte (count n))])
+        :else (concat [(unchecked-byte 0x82)] (.toByteArray (BigInteger/valueOf (count n)))))
       n))))
 
 (defn- asn1-seq [n]
   (byte-array
    (concat
-    [(byte (ubyte->byte 0x30))]
+    [(unchecked-byte 0x30)]
     (cond
       (< (count n) 128) [(unchecked-byte (count n))]
-      (and (> (count n) 127) (< (count n) 256)) (concat [(byte (ubyte->byte 0x81))] [(unchecked-byte (count n))])
-      :else (concat [(byte (ubyte->byte 0x82))] (.toByteArray (BigInteger/valueOf (count n)))))
+      (and (> (count n) 127) (< (count n) 256)) (concat [(unchecked-byte 0x81)] [(unchecked-byte (count n))])
+      :else (concat [(unchecked-byte 0x82)] (.toByteArray (BigInteger/valueOf (count n)))))
     n)))
 
 (defn- asn1-obj [n]
@@ -76,8 +71,8 @@
    [(byte 0x03)]
    (cond
      (< (count n) 128) nil
-     (and (> (count n) 127) (< (count n) 256)) [(byte (ubyte->byte 0x81))]
-     :else [(byte (ubyte->byte 0x82))])
+     (and (> (count n) 127) (< (count n) 256)) [(unchecked-byte 0x81)]
+     :else [(unchecked-byte 0x82)])
    (.toByteArray (BigInteger/valueOf (inc (count n))))
    [(byte 0x00)] ;; investigate why this is needed
    n))
@@ -87,8 +82,8 @@
    [(byte 0x04)]
    (cond
      (< (count n) 128) nil
-     (and (> (count n) 127) (< (count n) 256)) [(byte (ubyte->byte 0x81))]
-     :else [(byte (ubyte->byte 0x82))])
+     (and (> (count n) 127) (< (count n) 256)) [(unchecked-byte 0x81)]
+     :else [(unchecked-byte 0x82)])
    (.toByteArray (BigInteger/valueOf (count n)))
    n))
 
