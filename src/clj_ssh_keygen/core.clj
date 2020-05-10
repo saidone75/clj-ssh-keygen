@@ -7,9 +7,6 @@
 ;; key length
 (def key-length 2048)
 
-;; public exponent
-(def e (BigInteger/valueOf 65537))
-
 ;; generate a prime number of (key lenght / 2) bits
 (defn- genprime [e key-length]
   (loop [n (BigInteger/probablePrime (/ key-length 2) (SecureRandom.))]
@@ -17,22 +14,25 @@
       n
       (recur (BigInteger/probablePrime (/ key-length 2) (SecureRandom.))))))
 
-;; prime1
-(def p (genprime e key-length))
-
-;; prime2
-;; making sure that p x q (modulus) is 2048 bit long
-(def q
-  (loop [q (genprime e key-length)]
-    (if (= 2048 (.bitLength (.multiply p q)))
-      q
-      (recur (genprime e key-length)))))
-
-;; modulus
-(def n (.multiply p q))
-
-;; private exponent
-(def d (.modInverse e (.multiply (.subtract p BigInteger/ONE) (.subtract q BigInteger/ONE))))
+;; key pair as a quintuple (e, p, q, n, d)
+(defn generate-key-pair []
+  (let [;; public exponent
+        e (BigInteger/valueOf 65537) 
+        ;; secret prime 1
+        p (genprime e key-length)
+        ;; secret prime 2
+        ;; making sure that p x q (modulus) is exactly "key-length" bit long
+        q (loop [q (genprime e key-length)]
+            (if (= key-length (.bitLength (.multiply p q)))
+              q
+              (recur (genprime e key-length))))
+        ;; modulus
+        n (.multiply p q)
+        ;; private exponent
+        d (.modInverse e (.multiply
+                          (.subtract p BigInteger/ONE)
+                          (.subtract q BigInteger/ONE)))]
+    {:e e :p p :q q :n n :d d}))
 
 (defn- ubyte->byte [b]
   (if (>= b 128)
@@ -95,21 +95,21 @@
 (def pkcs1-oid-value [1 2 840 113549 1 1 1])
 (def pkcs1-oid-value-hex [0x2A 0x86 0x48 0x86 0xF7 0x0D 0x01 0x01 0x01])
 
-(def public-key
- (asn1-seq
-  (concat
-   (asn1-seq
-    (concat
-     (asn1-obj
-      (map #(unchecked-byte %) pkcs1-oid-value-hex))
-     (asn1-null nil)))
-   (asn1-bit-str 
+(defn public-key [kp]
+  (asn1-seq
+   (concat
     (asn1-seq
      (concat
-      ;; modulus
-      (asn1-int n)
-      ;; public exponent
-      (asn1-int e)))))))
+      (asn1-obj
+       (map #(unchecked-byte %) pkcs1-oid-value-hex))
+      (asn1-null nil)))
+    (asn1-bit-str 
+     (asn1-seq
+      (concat
+       ;; modulus
+       (asn1-int (:n kp))
+       ;; public exponent
+       (asn1-int (:e kp))))))))
 
 ;; 4 bytes length + "ssh-rsa" string
 (def ssh-prefix [0x00 0x00 0x00 0x07 0x73 0x73 0x68 0x2d 0x72 0x73 0x61])
@@ -119,52 +119,53 @@
 
 ;; more familiar for ssh users
 ;; same informations of pem in a sligthly different format
-(def openssh-public-key
- (byte-array
-  (concat
-   (map #(unchecked-byte %) ssh-prefix)
-   (map #(unchecked-byte %) ssh-exponent-length)
-   (.toByteArray e)
-   (map #(unchecked-byte %) [0 0])
-   (.toByteArray (BigInteger/valueOf (count (.toByteArray n))))
-   (.toByteArray n))))
+(defn openssh-public-key [kp]
+  (byte-array
+   (concat
+    (map #(unchecked-byte %) ssh-prefix)
+    (map #(unchecked-byte %) ssh-exponent-length)
+    (.toByteArray (:e kp))
+    (map #(unchecked-byte %) [0 0])
+    (.toByteArray (BigInteger/valueOf (count (.toByteArray (:n kp)))))
+    (.toByteArray (:n kp)))))
 
-(def private-key
- (asn1-seq
-  (concat
-   (asn1-int BigInteger/ZERO)
-   (asn1-seq
-    (concat
-     (asn1-obj
-      (map #(unchecked-byte %) pkcs1-oid-value-hex))
-     (asn1-null nil)))
-   (asn1-oct-str
+(defn private-key [kp]
+  (asn1-seq
+   (concat
+    (asn1-int BigInteger/ZERO)
     (asn1-seq
      (concat
-      ;; version
-      (asn1-int BigInteger/ZERO)
-      ;; modulus
-      (asn1-int n)
-      ;; public exponent
-      (asn1-int e)
-      ;; private exponent
-      (asn1-int d)
-      ;; prime1
-      (asn1-int p)
-      ;; prime2
-      (asn1-int q)
-      ;; exponent1
-      (asn1-int (.mod d (.subtract p BigInteger/ONE)))
-      ;; exponent2
-      (asn1-int (.mod d (.subtract q BigInteger/ONE)))
-      ;; coefficient
-      (asn1-int (.modInverse q p))))))))
+      (asn1-obj
+       (map #(unchecked-byte %) pkcs1-oid-value-hex))
+      (asn1-null nil)))
+    (asn1-oct-str
+     (asn1-seq
+      (concat
+       ;; version
+       (asn1-int BigInteger/ZERO)
+       ;; modulus
+       (asn1-int (:n kp))
+       ;; public exponent
+       (asn1-int (:e kp))
+       ;; private exponent
+       (asn1-int (:d kp))
+       ;; prime1
+       (asn1-int (:p kp))
+       ;; prime2
+       (asn1-int (:q kp))
+       ;; exponent1
+       (asn1-int (.mod (:d kp) (.subtract (:p kp) BigInteger/ONE)))
+       ;; exponent2
+       (asn1-int (.mod (:d kp) (.subtract (:q kp) BigInteger/ONE)))
+       ;; coefficient
+       (asn1-int (.modInverse (:q kp) (:p kp)))))))))
 
 (defn -main
   [& args]
-  (utils/write-private-key! private-key "pvt.pem")
-  (utils/write-public-key! public-key "pub.pem")
-  (utils/write-openssh-public-key! openssh-public-key "id_rsa.pub"))
+  (let [kp (generate-key-pair)]
+    (utils/write-private-key! (private-key kp) "pvt.pem")
+    (utils/write-public-key! (public-key kp) "pub.pem")
+    (utils/write-openssh-public-key! (openssh-public-key kp) "id_rsa.pub")))
 
 ;; show public key
 ;; openssl rsa -noout -text -pubin -inform PEM -in pub.pem
