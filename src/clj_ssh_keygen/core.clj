@@ -15,7 +15,7 @@
       (recur (BigInteger/probablePrime (/ key-length 2) (SecureRandom.))))))
 
 ;; key pair as a quintuple (e, p, q, n, d)
-(defn generate-key-pair []
+(defn generate-key []
   (let [;; public exponent
         e (BigInteger/valueOf 65537) 
         ;; secret prime 1
@@ -166,10 +166,10 @@
 
 (defn -main
   [& args]
-  (let [kp (generate-key-pair)]
-    (utils/write-private-key! (private-key kp) "pvt.pem")
-    (utils/write-public-key! (public-key kp) "pub.pem")
-    (utils/write-openssh-public-key! (openssh-public-key kp) "id_rsa.pub")))
+  (let [key (generate-key)]
+    (utils/write-private-key! (private-key key) "pvt.pem")
+    (utils/write-public-key! (public-key key) "pub.pem")
+    (utils/write-openssh-public-key! (openssh-public-key key) "id_rsa.pub")))
 
 ;; Test keys integrity
 ;;
