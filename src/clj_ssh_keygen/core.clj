@@ -1,37 +1,8 @@
 (ns clj-ssh-keygen.core
-  (:import [java.security SecureRandom]
-           [java.util Base64]) 
+  (:import [java.security SecureRandom]) 
   (:gen-class))
 
-(defn- wrap-72 [s]
-  (reduce
-   #(str %1 %2 "\n")
-   ""
-   (map
-    #(apply str %)
-    (partition-all 72 s))))
-
-(defn- write-public-key! [n]
-  (spit "./pub.pem"
-        (str
-         "-----BEGIN PUBLIC KEY-----\n"
-         (wrap-72
-          (.encodeToString (Base64/getEncoder) n))
-         "-----END PUBLIC KEY-----\n")))
-
-(defn- write-private-key! [n]
-  (spit "./pvt.pem"
-        (str
-         "-----BEGIN PRIVATE KEY-----\n"
-         (wrap-72
-          (.encodeToString (Base64/getEncoder) n))
-         "-----END PRIVATE KEY-----\n")))
-
-(defn- write-openssh-public-key! [n]
-  (spit "./id_rsa.pub"
-        (str
-         "ssh-rsa "
-         (.encodeToString (Base64/getEncoder) n))))
+(require '[clj-ssh-keygen.utils :as utils])
 
 ;; key length
 (def key-length 2048)
@@ -172,6 +143,7 @@
    (asn1-oct-str
     (asn1-seq
      (concat
+      ;; version
       (asn1-int BigInteger/ZERO)
       ;; modulus
       (asn1-int n)
@@ -192,9 +164,9 @@
 
 (defn -main
   [& args]
-  (write-private-key! private-key)
-  (write-public-key! public-key)
-  (write-openssh-public-key! openssh-public-key))
+  (utils/write-private-key! private-key)
+  (utils/write-public-key! public-key)
+  (utils/write-openssh-public-key! openssh-public-key))
 
 ;; show public key
 ;; openssl rsa -noout -text -pubin -inform PEM -in pub.pem
