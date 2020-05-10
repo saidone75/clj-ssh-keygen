@@ -14,7 +14,7 @@
       n
       (recur (BigInteger/probablePrime (/ key-length 2) (SecureRandom.))))))
 
-;; key pair as a quintuplet (e, p, q, n, d)
+;; key as a quintuplet (e, p, q, n, d)
 (defn generate-key []
   (let [;; public exponent
         e (BigInteger/valueOf 65537) 
