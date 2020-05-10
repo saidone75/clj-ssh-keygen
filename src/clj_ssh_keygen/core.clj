@@ -126,9 +126,11 @@
    (concat
     (map #(unchecked-byte %) ssh-prefix)
     (map #(unchecked-byte %) ssh-exponent-length)
+    ;; public exponent
     (.toByteArray (:e kp))
     (map #(unchecked-byte %) [0x00 0x00])
     (.toByteArray (BigInteger/valueOf (count (.toByteArray (:n kp)))))
+    ;; modulus
     (.toByteArray (:n kp)))))
 
 ;; RSA private key
