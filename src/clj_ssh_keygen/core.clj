@@ -34,57 +34,49 @@
                           (.subtract q BigInteger/ONE)))]
     {:e e :p p :q q :n n :d d}))
 
+
+(defn- asn1-length [n]
+  (cond
+    (< (count n) 128) [(unchecked-byte (count n))]
+    (and (> (count n) 127) (< (count n) 256)) (concat [(unchecked-byte 0x81)] [(unchecked-byte (count n))])
+    :else (concat [(unchecked-byte 0x82)] (.toByteArray (BigInteger/valueOf (count n))))))
+
 (defn- asn1-int [n]
   (let [n (.toByteArray n)]
     (byte-array
      (concat
       [(byte 2)]
-      (cond
-        (< (count n) 128) [(unchecked-byte (count n))]
-        (and (> (count n) 127) (< (count n) 256)) (concat [(unchecked-byte 0x81)] [(unchecked-byte (count n))])
-        :else (concat [(unchecked-byte 0x82)] (.toByteArray (BigInteger/valueOf (count n)))))
+      (asn1-length n)
       n))))
 
 (defn- asn1-seq [n]
   (byte-array
    (concat
     [(unchecked-byte 0x30)]
-    (cond
-      (< (count n) 128) [(unchecked-byte (count n))]
-      (and (> (count n) 127) (< (count n) 256)) (concat [(unchecked-byte 0x81)] [(unchecked-byte (count n))])
-      :else (concat [(unchecked-byte 0x82)] (.toByteArray (BigInteger/valueOf (count n)))))
+    (asn1-length n)
     n)))
 
 (defn- asn1-obj [n]
   (concat
    [(byte 0x06)]
-   (.toByteArray (BigInteger/valueOf (count n)))
+   (asn1-length n)
    n))
 
-(defn- asn1-null [n]
+(defn- asn1-null []
   (concat
-   [(byte 0x05)]
-   (.toByteArray (BigInteger/valueOf (count n)))))
+   [(byte 0x05) (unchecked-byte 0x00)]))
 
 (defn- asn1-bit-str [n]
   (concat
    [(byte 0x03)]
-   (cond
-     (< (count n) 128) nil
-     (and (> (count n) 127) (< (count n) 256)) [(unchecked-byte 0x81)]
-     :else [(unchecked-byte 0x82)])
-   (.toByteArray (BigInteger/valueOf (inc (count n))))
+   (asn1-length (byte-array (concat n [(unchecked-byte 0x00)])))
    [(byte 0x00)] ;; investigate why this is needed
    n))
 
 (defn- asn1-oct-str [n]
   (concat
    [(byte 0x04)]
-   (cond
-     (< (count n) 128) nil
-     (and (> (count n) 127) (< (count n) 256)) [(unchecked-byte 0x81)]
-     :else [(unchecked-byte 0x82)])
-   (.toByteArray (BigInteger/valueOf (count n)))
+   (asn1-length n)
    n))
 
 (def pkcs1-oid-value [1 2 840 113549 1 1 1])
@@ -97,7 +89,7 @@
      (concat
       (asn1-obj
        (map #(unchecked-byte %) pkcs1-oid-value-hex))
-      (asn1-null nil)))
+      (asn1-null)))
     (asn1-bit-str 
      (asn1-seq
       (concat
@@ -120,7 +112,7 @@
     (map #(unchecked-byte %) ssh-prefix)
     (map #(unchecked-byte %) ssh-exponent-length)
     (.toByteArray (:e kp))
-    (map #(unchecked-byte %) [0 0])
+    (map #(unchecked-byte %) [0x00 0x00])
     (.toByteArray (BigInteger/valueOf (count (.toByteArray (:n kp)))))
     (.toByteArray (:n kp)))))
 
@@ -132,7 +124,7 @@
      (concat
       (asn1-obj
        (map #(unchecked-byte %) pkcs1-oid-value-hex))
-      (asn1-null nil)))
+      (asn1-null)))
     (asn1-oct-str
      (asn1-seq
       (concat
@@ -169,3 +161,4 @@
 ;; openssl rsa -pubout -in pvt.pem -out pub.pem
 
 ;; openssh -i pvt.pem user@host
+(-main)
