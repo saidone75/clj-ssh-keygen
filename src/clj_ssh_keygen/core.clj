@@ -34,21 +34,23 @@
                           (.subtract q BigInteger/ONE)))]
     {:e e :p p :q q :n n :d d}))
 
-
+;; compute length of ASN.1 value
 (defn- asn1-length [n]
   (cond
     (< (count n) 128) [(unchecked-byte (count n))]
     (and (> (count n) 127) (< (count n) 256)) (concat [(unchecked-byte 0x81)] [(unchecked-byte (count n))])
     :else (concat [(unchecked-byte 0x82)] (.toByteArray (BigInteger/valueOf (count n))))))
 
+;; ASN.1 encoding for INTEGER
 (defn- asn1-int [n]
   (let [n (.toByteArray n)]
     (byte-array
      (concat
-      [(byte 2)]
+      [(unchecked-byte 0x02)]
       (asn1-length n)
       n))))
 
+;; ASN.1 encoding for SEQUENCE
 (defn- asn1-seq [n]
   (byte-array
    (concat
@@ -56,32 +58,44 @@
     (asn1-length n)
     n)))
 
+;; ASN.1 encoding for OBJECT
 (defn- asn1-obj [n]
   (concat
-   [(byte 0x06)]
+   [(unchecked-byte 0x06)]
    (asn1-length n)
    n))
 
+;; ASN.1 encoding for NULL
 (defn- asn1-null []
   (concat
-   [(byte 0x05) (unchecked-byte 0x00)]))
+   [(unchecked-byte 0x05) (unchecked-byte 0x00)]))
 
+;; ASN.1 encoding for BIT STRING
 (defn- asn1-bit-str [n]
   (concat
-   [(byte 0x03)]
+   [(unchecked-byte 0x03)]
    (asn1-length (byte-array (concat n [(unchecked-byte 0x00)])))
-   [(byte 0x00)] ;; investigate why this is needed
+   [(unchecked-byte 0x00)]
    n))
 
+;; ASN.1 encoding for OCTET STRING
 (defn- asn1-oct-str [n]
   (concat
-   [(byte 0x04)]
+   [(unchecked-byte 0x04)]
    (asn1-length n)
    n))
 
+;; PKCS-1 OID value for RSA encryption
+;; see https://www.alvestrand.no/objectid/1.2.840.113549.1.1.1.html
 (def pkcs1-oid-value [1 2 840 113549 1 1 1])
+
+;; byte encoding for the above
+;; coded "by hand" because of the "odd" encoding logic
+;; https://stackoverflow.com/questions/3376357/how-to-convert-object-identifiers-to-hex-strings
 (def pkcs1-oid-value-hex [0x2A 0x86 0x48 0x86 0xF7 0x0D 0x01 0x01 0x01])
 
+;; RSA public key (only modulus (p x q) and public exponent)
+;; https://tools.ietf.org/html/rfc3447#appendix-A.1.1
 (defn public-key [kp]
   (asn1-seq
    (concat
@@ -98,10 +112,11 @@
        ;; public exponent
        (asn1-int (:e kp))))))))
 
-;; 4 bytes length + "ssh-rsa" string
+;; OpenSSH prefix and exponent length hardcoded
+;; 4 bytes prefix length + "ssh-rsa" string (7 bytes)
 (def ssh-prefix [0x00 0x00 0x00 0x07 0x73 0x73 0x68 0x2d 0x72 0x73 0x61])
 
-;; lenght of e (3 bytes)
+;; 4 bytes lenght for e (3 bytes)
 (def ssh-exponent-length [0x00 0x00 0x00 0x03])
 
 ;; more familiar for ssh users
@@ -116,6 +131,8 @@
     (.toByteArray (BigInteger/valueOf (count (.toByteArray (:n kp)))))
     (.toByteArray (:n kp)))))
 
+;; RSA private key
+;; https://tools.ietf.org/html/rfc3447#appendix-A.1.2
 (defn private-key [kp]
   (asn1-seq
    (concat
@@ -154,11 +171,14 @@
     (utils/write-public-key! (public-key kp) "pub.pem")
     (utils/write-openssh-public-key! (openssh-public-key kp) "id_rsa.pub")))
 
+;; Test keys integrity
+;;
 ;; show public key
-;; openssl rsa -noout -text -pubin -inform PEM -in pub.pem
-
+;; $ openssl rsa -noout -text -pubin -inform PEM -in pub.pem
+;;
 ;; extract public key from private
-;; openssl rsa -pubout -in pvt.pem -out pub.pem
-
+;; $ openssl rsa -pubout -in pvt.pem -out pub.pem
+;;
+;; use key to authenticate agains a host
+;; (id_rsa.pub must be appended to ~/.ssh/authorized_keys list)
 ;; openssh -i pvt.pem user@host
-(-main)
