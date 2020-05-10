@@ -31,10 +31,8 @@
 ;; modulus
 (def n (.multiply p q))
 
-(def l (.multiply (.subtract p BigInteger/ONE) (.subtract q BigInteger/ONE)))
-
 ;; private exponent
-(def d (.modInverse e l))
+(def d (.modInverse e (.multiply (.subtract p BigInteger/ONE) (.subtract q BigInteger/ONE))))
 
 (defn- ubyte->byte [b]
   (if (>= b 128)
@@ -164,9 +162,9 @@
 
 (defn -main
   [& args]
-  (utils/write-private-key! private-key)
-  (utils/write-public-key! public-key)
-  (utils/write-openssh-public-key! openssh-public-key))
+  (utils/write-private-key! private-key "pvt.pem")
+  (utils/write-public-key! public-key "pub.pem")
+  (utils/write-openssh-public-key! openssh-public-key "id_rsa.pub"))
 
 ;; show public key
 ;; openssl rsa -noout -text -pubin -inform PEM -in pub.pem

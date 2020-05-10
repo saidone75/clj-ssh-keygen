@@ -10,24 +10,24 @@
     #(apply str %)
     (partition-all 72 s))))
 
-(defn write-public-key! [n]
-  (spit "./pub.pem"
+(defn write-public-key! [k f]
+  (spit f
         (str
          "-----BEGIN PUBLIC KEY-----\n"
          (wrap-72
-          (.encodeToString (Base64/getEncoder) n))
+          (.encodeToString (Base64/getEncoder) k))
          "-----END PUBLIC KEY-----\n")))
 
-(defn write-private-key! [n]
-  (spit "./pvt.pem"
+(defn write-private-key! [k f]
+  (spit f
         (str
          "-----BEGIN PRIVATE KEY-----\n"
          (wrap-72
-          (.encodeToString (Base64/getEncoder) n))
+          (.encodeToString (Base64/getEncoder) k))
          "-----END PRIVATE KEY-----\n")))
 
-(defn write-openssh-public-key! [n]
-  (spit "./id_rsa.pub"
+(defn write-openssh-public-key! [k f]
+  (spit f
         (str
          "ssh-rsa "
-         (.encodeToString (Base64/getEncoder) n))))
+         (.encodeToString (Base64/getEncoder) k))))
