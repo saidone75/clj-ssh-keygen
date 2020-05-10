@@ -25,7 +25,7 @@
          "-----BEGIN PRIVATE KEY-----\n"
          (wrap-72
           (.encodeToString (Base64/getEncoder) n))
-         "-----END PRIVATE KEY-----")))
+         "-----END PRIVATE KEY-----\n")))
 
 (defn- write-openssh-public-key! [n]
   (spit "./id_rsa.pub"
@@ -148,6 +148,8 @@
 ;; lenght of e (3 bytes)
 (def ssh-exponent-length [0x00 0x00 0x00 0x03])
 
+;; more familiar for ssh users
+;; same informations of pem in a sligthly different format
 (def openssh-public-key
  (byte-array
   (concat
