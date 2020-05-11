@@ -116,7 +116,7 @@
        ;; public exponent
        (asn1-int (:e key))))))))
 
-;; OpenSSH pubic key (id_rsa.pub) more familiar for ssh users
+;; OpenSSH public key (id_rsa.pub) more familiar for ssh users
 ;; 
 ;; compute item length as required from OpenSSH
 ;; 4 bytes format
