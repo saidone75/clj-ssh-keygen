@@ -1,6 +1,6 @@
 # clj-ssh-keygen
 
-Generate RSA PKCS #1 key-pairs **from scratch** in Clojure
+Generate RSA PKCS #1 keys **from scratch** in Clojure, export **PEM** and **OpenSSH** formats
 
 ![public key](https://i.postimg.cc/g2hqR9xz/pubkey.png "public key")
 
