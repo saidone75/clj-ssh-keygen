@@ -2,6 +2,8 @@
 
 Generate RSA PKCS #1 key-pairs **from scratch** in Clojure
 
+![public key](https://i.postimg.cc/vZxxjWy3/public-key.png "public key")
+
 ## Usage
 ```clojure
  (let [key (generate-key)]
@@ -9,6 +11,7 @@ Generate RSA PKCS #1 key-pairs **from scratch** in Clojure
     (write-public-key! (public-key key) "pub.pem")
     (write-openssh-public-key! (openssh-public-key key) "id_rsa.pub")))
 ```
+
 ## License
 Copyright (c) 2020 Saidone
 
