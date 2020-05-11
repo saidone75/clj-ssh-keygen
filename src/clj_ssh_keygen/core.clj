@@ -34,36 +34,36 @@
                           (.subtract q BigInteger/ONE)))]
     {:e e :p p :q q :n n :d d}))
 
-;; compute length of ASN.1 value
-(defn- asn1-length [n]
+;; compute length of ASN.1 content
+(defn- asn1-length [c]
   (cond
-    (< (count n) 128) [(unchecked-byte (count n))]
-    (and (> (count n) 127) (< (count n) 256)) (concat [(unchecked-byte 0x81)] [(unchecked-byte (count n))])
-    :else (concat [(unchecked-byte 0x82)] (.toByteArray (BigInteger/valueOf (count n))))))
+    (< (count c) 128)[(unchecked-byte (count c))]
+    (and (> (count c) 127) (< (count c) 256)) (concat [(unchecked-byte 0x81)] [(unchecked-byte (count c))])
+    :else (concat [(unchecked-byte 0x82)] (.toByteArray (BigInteger/valueOf (count c))))))
+
+;; ASN.1 generic encoding
+(defn- asn1-enc [tag content & [ub]]
+  (byte-array
+   (concat
+    [(unchecked-byte tag)]
+    (asn1-length (if (nil? ub)
+                   content
+                   (byte-array (concat [(unchecked-byte 0x00)] content))))
+    ;; unused bits for BIT STRING
+    (if (not (nil? ub)) [(unchecked-byte ub)])
+    content)))
 
 ;; ASN.1 encoding for INTEGER
 (defn- asn1-int [n]
-  (let [n (.toByteArray n)]
-    (byte-array
-     (concat
-      [(unchecked-byte 0x02)]
-      (asn1-length n)
-      n))))
+  (asn1-enc 0x02 (.toByteArray n)))
 
 ;; ASN.1 encoding for SEQUENCE
 (defn- asn1-seq [n]
-  (byte-array
-   (concat
-    [(unchecked-byte 0x30)]
-    (asn1-length n)
-    n)))
+  (asn1-enc 0x30 n))
 
 ;; ASN.1 encoding for OBJECT
 (defn- asn1-obj [n]
-  (concat
-   [(unchecked-byte 0x06)]
-   (asn1-length n)
-   n))
+  (asn1-enc 0x06 n))
 
 ;; ASN.1 encoding for NULL
 (defn- asn1-null []
@@ -72,18 +72,11 @@
 
 ;; ASN.1 encoding for BIT STRING
 (defn- asn1-bit-str [n]
-  (concat
-   [(unchecked-byte 0x03)]
-   (asn1-length (byte-array (concat n [(unchecked-byte 0x00)])))
-   [(unchecked-byte 0x00)]
-   n))
+  (asn1-enc 0x03 n 0x00))
 
 ;; ASN.1 encoding for OCTET STRING
 (defn- asn1-oct-str [n]
-  (concat
-   [(unchecked-byte 0x04)]
-   (asn1-length n)
-   n))
+  (asn1-enc 0x04 n))
 
 ;; PKCS-1 OID value for RSA encryption
 ;; see https://www.alvestrand.no/objectid/1.2.840.113549.1.1.1.html
@@ -112,14 +105,14 @@
        ;; public exponent
        (asn1-int (:e kp))))))))
 
-;; OpenSSH prefix and exponent length hardcoded
+;; OpenSSH pubic key (id_rsa.pub) more familiar for ssh users
+;; prefix and exponent length hardcoded
 ;; 4 bytes prefix length + "ssh-rsa" string (7 bytes)
 (def ssh-prefix [0x00 0x00 0x00 0x07 0x73 0x73 0x68 0x2d 0x72 0x73 0x61])
 
 ;; 4 bytes lenght for e (3 bytes)
 (def ssh-exponent-length [0x00 0x00 0x00 0x03])
 
-;; more familiar for ssh users
 ;; same informations of pem in a sligthly different format
 (defn openssh-public-key [kp]
   (byte-array
@@ -166,14 +159,23 @@
        ;; coefficient
        (asn1-int (.modInverse (:q kp) (:p kp)))))))))
 
+(defn write-private-key! [k f]
+  (utils/write-private-key! k f))
+
+(defn write-public-key! [k f]
+  (utils/write-public-key! k f))
+
+(defn write-openssh-public-key! [k f]
+  (utils/write-openssh-public-key! k f))
+
 (defn -main
   [& args]
   (let [key (generate-key)]
-    (utils/write-private-key! (private-key key) "pvt.pem")
-    (utils/write-public-key! (public-key key) "pub.pem")
-    (utils/write-openssh-public-key! (openssh-public-key key) "id_rsa.pub")))
+    (write-private-key! (private-key key) "pvt.pem")
+    (write-public-key! (public-key key) "pub.pem")
+    (write-openssh-public-key! (openssh-public-key key) "id_rsa.pub")))
 
-;; Test keys integrity
+;; Test keys integrity with openssl
 ;;
 ;; show public key
 ;; $ openssl rsa -noout -text -pubin -inform PEM -in pub.pem
@@ -182,5 +184,8 @@
 ;; $ openssl rsa -pubout -in pvt.pem -out pub.pem
 ;;
 ;; use key to authenticate on a host
-;; (id_rsa.pub must be appended to ~/.ssh/authorized_keys list)
-;; openssh -i pvt.pem user@host
+;; id_rsa.pub must be appended to ~/.ssh/authorized_keys for user on destination host
+;; https://man.openbsd.org/ssh#AUTHENTICATION
+;; $ ssh -i pvt.pem user@host
+;;
+;; awesome online tool for debugging ASN.1 https://lapo.it/asn1js/
