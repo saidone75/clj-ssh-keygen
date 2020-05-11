@@ -2,7 +2,7 @@
 
 Generate RSA PKCS #1 key-pairs **from scratch** in Clojure
 
-![public key](https://i.postimg.cc/vZxxjWy3/public-key.png "public key")
+![public key](https://i.postimg.cc/g2hqR9xz/pubkey.png "public key")
 
 ## Usage
 ```clojure
