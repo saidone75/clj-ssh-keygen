@@ -212,4 +212,3 @@
 ;; $ ssh -i pvt.pem user@host
 ;;
 ;; awesome online tool for debugging ASN.1 https://lapo.it/asn1js/
-(-main)
