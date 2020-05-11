@@ -117,27 +117,41 @@
        (asn1-int (:e kp))))))))
 
 ;; OpenSSH pubic key (id_rsa.pub) more familiar for ssh users
-;;
-;; prefix and exponent length hardcoded
-;; 4 bytes prefix length
-(def ssh-prefix-length [0x00 0x00 0x00 0x07])
+;; 
+;; compute item length as required from OpenSSH
+;; 4 bytes format
+(defn- openssh-length [c]
+  (byte-array
+   (loop [c (.toByteArray (BigInteger/valueOf (count c)))]
+     (if (= 4 (count c))
+       c
+       (recur (concat [(unchecked-byte 0x00)] c))))))
 
-;; 4 bytes public exponent lenght
-(def ssh-exponent-length [0x00 0x00 0x00 0x03])
+;; concat item length with item represented as byte array
+(defmulti openssh-item string?)
+(defmethod openssh-item true [s]
+  (let [ba (.getBytes s)]
+    (byte-array
+     (concat
+      (openssh-length ba)
+      ba))))
+(defmethod openssh-item false [n]
+  (let [ba (.toByteArray n)]
+    (byte-array
+     (concat
+      (openssh-length ba)
+      ba))))
 
 ;; same informations of pem in a sligthly different format
 (defn openssh-public-key [kp]
   (byte-array
    (concat
-    (map #(unchecked-byte %) ssh-prefix-length)
-    (.getBytes "ssh-rsa")
-    (map #(unchecked-byte %) ssh-exponent-length)
+    ;; string prefix
+    (openssh-item "ssh-rsa")
     ;; public exponent
-    (.toByteArray (:e kp))
-    (map #(unchecked-byte %) [0x00 0x00])
-    (.toByteArray (BigInteger/valueOf (count (.toByteArray (:n kp)))))
+    (openssh-item (:e kp))
     ;; modulus
-    (.toByteArray (:n kp)))))
+    (openssh-item (:n kp)))))
 
 ;; RSA private key
 ;; https://tools.ietf.org/html/rfc3447#appendix-A.1.2
