@@ -128,15 +128,11 @@
        (recur (concat [(unchecked-byte 0x00)] c))))))
 
 ;; concat item length with item represented as byte array
-(defmulti openssh-item string?)
-(defmethod openssh-item true [s]
-  (let [ba (.getBytes s)]
-    (byte-array
-     (concat
-      (openssh-length ba)
-      ba))))
-(defmethod openssh-item false [n]
-  (let [ba (.toByteArray n)]
+(defn- openssh-item [i]
+  (let [ba
+        (cond
+          (string? i) (.getBytes i)
+          :else (.toByteArray i))]
     (byte-array
      (concat
       (openssh-length ba)
@@ -216,3 +212,4 @@
 ;; $ ssh -i pvt.pem user@host
 ;;
 ;; awesome online tool for debugging ASN.1 https://lapo.it/asn1js/
+(-main)
