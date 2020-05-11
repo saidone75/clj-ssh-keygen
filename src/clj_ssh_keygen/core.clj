@@ -93,14 +93,14 @@
 ;; see https://www.alvestrand.no/objectid/1.2.840.113549.1.1.1.html
 (def pkcs1-oid-value [1 2 840 113549 1 1 1])
 
-;; byte encoding for the above
-;; coded "by hand" because of the "odd" encoding logic
+;; hex byte version of the above
+;; coded "by hand" because of the "pretty odd" encoding logic
 ;; https://stackoverflow.com/questions/3376357/how-to-convert-object-identifiers-to-hex-strings
 (def pkcs1-oid-value-hex [0x2A 0x86 0x48 0x86 0xF7 0x0D 0x01 0x01 0x01])
 
 ;; RSA public key (only modulus (p x q) and public exponent)
 ;; https://tools.ietf.org/html/rfc3447#appendix-A.1.1
-(defn public-key [kp]
+(defn public-key [key]
   (asn1-seq
    (concat
     (asn1-seq
@@ -112,9 +112,9 @@
      (asn1-seq
       (concat
        ;; modulus
-       (asn1-int (:n kp))
+       (asn1-int (:n key))
        ;; public exponent
-       (asn1-int (:e kp))))))))
+       (asn1-int (:e key))))))))
 
 ;; OpenSSH pubic key (id_rsa.pub) more familiar for ssh users
 ;; 
@@ -139,19 +139,19 @@
       ba))))
 
 ;; same informations of pem in a sligthly different format
-(defn openssh-public-key [kp]
+(defn openssh-public-key [key]
   (byte-array
    (concat
     ;; string prefix
     (openssh-item "ssh-rsa")
     ;; public exponent
-    (openssh-item (:e kp))
+    (openssh-item (:e key))
     ;; modulus
-    (openssh-item (:n kp)))))
+    (openssh-item (:n key)))))
 
 ;; RSA private key
 ;; https://tools.ietf.org/html/rfc3447#appendix-A.1.2
-(defn private-key [kp]
+(defn private-key [key]
   (asn1-seq
    (concat
     (asn1-int BigInteger/ZERO)
@@ -166,21 +166,21 @@
        ;; version
        (asn1-int BigInteger/ZERO)
        ;; modulus
-       (asn1-int (:n kp))
+       (asn1-int (:n key))
        ;; public exponent
-       (asn1-int (:e kp))
+       (asn1-int (:e key))
        ;; private exponent
-       (asn1-int (:d kp))
+       (asn1-int (:d key))
        ;; prime1
-       (asn1-int (:p kp))
+       (asn1-int (:p key))
        ;; prime2
-       (asn1-int (:q kp))
+       (asn1-int (:q key))
        ;; exponent1
-       (asn1-int (.mod (:d kp) (.subtract (:p kp) BigInteger/ONE)))
+       (asn1-int (.mod (:d key) (.subtract (:p key) BigInteger/ONE)))
        ;; exponent2
-       (asn1-int (.mod (:d kp) (.subtract (:q kp) BigInteger/ONE)))
+       (asn1-int (.mod (:d key) (.subtract (:q key) BigInteger/ONE)))
        ;; coefficient
-       (asn1-int (.modInverse (:q kp) (:p kp)))))))))
+       (asn1-int (.modInverse (:q key) (:p key)))))))))
 
 (defn write-private-key! [k f]
   (utils/write-private-key! k f))
