@@ -38,6 +38,7 @@
     {:e e :p p :q q :n n :d d}))
 
 ;; ASN.1 encoding stuff
+;;
 ;; the bare minimum for working with PKCS #1 keys
 ;; http://luca.ntop.org/Teaching/Appunti/asn1.html
 ;; compute length of ASN.1 content
@@ -112,6 +113,7 @@
        (asn1-int (:e kp))))))))
 
 ;; OpenSSH pubic key (id_rsa.pub) more familiar for ssh users
+;;
 ;; prefix and exponent length hardcoded
 ;; 4 bytes prefix length + "ssh-rsa" string (7 bytes)
 (def ssh-prefix [0x00 0x00 0x00 0x07 0x73 0x73 0x68 0x2d 0x72 0x73 0x61])
