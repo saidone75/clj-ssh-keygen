@@ -191,13 +191,6 @@
 (defn write-openssh-public-key! [k f]
   (utils/write-openssh-public-key! k f))
 
-(defn -main
-  [& args]
-  (let [key (generate-key)]
-    (write-private-key! (private-key key) "pvt.pem")
-    (write-public-key! (public-key key) "pub.pem")
-    (write-openssh-public-key! (openssh-public-key key) "id_rsa.pub")))
-
 ;; Test keys integrity with openssl
 ;;
 ;; show public key

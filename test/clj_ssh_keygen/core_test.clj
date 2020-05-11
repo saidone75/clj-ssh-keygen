@@ -2,6 +2,8 @@
   (:require [clojure.test :refer :all]
             [clj-ssh-keygen.core :refer :all]))
 
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
+(deftest keygen
+  (let [key (generate-key)]
+    (write-private-key! (private-key key) "pvt.pem")
+    (write-public-key! (public-key key) "pub.pem")
+    (write-openssh-public-key! (openssh-public-key key) "id_rsa.pub")))
