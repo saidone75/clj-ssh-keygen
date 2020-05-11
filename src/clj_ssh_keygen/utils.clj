@@ -1,3 +1,5 @@
+;; Copyright (c) 2020 Saidone
+
 (ns clj-ssh-keygen.utils
   (:import [java.util Base64]) 
   (:gen-class))

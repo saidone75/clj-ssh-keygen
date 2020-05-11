@@ -1,3 +1,5 @@
+;; Copyright (c) 2020 Saidone
+
 (ns clj-ssh-keygen.core
   (:import [java.security SecureRandom]) 
   (:gen-class))
@@ -15,6 +17,7 @@
       (recur (BigInteger/probablePrime (/ key-length 2) (SecureRandom.))))))
 
 ;; key as a quintuplet (e, p, q, n, d)
+;; see https://www.di-mgt.com.au/rsa_alg.html#keygen for algorithm insights
 (defn generate-key []
   (let [;; public exponent
         e (BigInteger/valueOf 65537) 
@@ -34,6 +37,9 @@
                           (.subtract q BigInteger/ONE)))]
     {:e e :p p :q q :n n :d d}))
 
+;; ASN.1 encoding stuff
+;; the bare minimum for working with PKCS #1 keys
+;; http://luca.ntop.org/Teaching/Appunti/asn1.html
 ;; compute length of ASN.1 content
 (defn- asn1-length [c]
   (cond
