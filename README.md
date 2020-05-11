@@ -2,6 +2,8 @@
 
 Generate RSA PKCS #1 keys **from scratch** in Clojure, export **PEM** and **OpenSSH** formats
 
+*☛ intended for hacking and educational purposes only!*
+
 ![public key](https://i.postimg.cc/g2hqR9xz/pubkey.png "public key")
 
 ## Usage
