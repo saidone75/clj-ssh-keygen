@@ -41,6 +41,7 @@
 ;;
 ;; the bare minimum for working with PKCS #1 keys
 ;; http://luca.ntop.org/Teaching/Appunti/asn1.html
+;;
 ;; compute length of ASN.1 content
 (defn- asn1-length [c]
   (cond
