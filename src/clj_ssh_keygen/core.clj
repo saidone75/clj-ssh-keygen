@@ -9,8 +9,11 @@
 ;; key length
 (def key-length 2048)
 
+;; public exponent
+(def e (BigInteger/valueOf 65537))
+
 ;; generate a prime number of (key lenght / 2) bits
-(defn- genprime [e key-length]
+(defn- genprime []
   (loop [n (BigInteger/probablePrime (/ key-length 2) (SecureRandom.))]
     (if (not (= 1 (.mod n e)))
       n
@@ -20,15 +23,15 @@
 ;; see https://www.di-mgt.com.au/rsa_alg.html#keygen for algorithm insights
 (defn generate-key []
   (let [;; public exponent
-        e (BigInteger/valueOf 65537) 
+        e e
         ;; secret prime 1
-        p (genprime e key-length)
+        p (genprime)
         ;; secret prime 2
         ;; making sure that p x q (modulus) is exactly "key-length" bit long
-        q (loop [q (genprime e key-length)]
+        q (loop [q (genprime)]
             (if (= key-length (.bitLength (.multiply p q)))
               q
-              (recur (genprime e key-length))))
+              (recur (genprime))))
         ;; modulus
         n (.multiply p q)
         ;; private exponent
