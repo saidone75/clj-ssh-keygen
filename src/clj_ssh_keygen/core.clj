@@ -119,17 +119,18 @@
 ;; OpenSSH pubic key (id_rsa.pub) more familiar for ssh users
 ;;
 ;; prefix and exponent length hardcoded
-;; 4 bytes prefix length + "ssh-rsa" string (7 bytes)
-(def ssh-prefix [0x00 0x00 0x00 0x07 0x73 0x73 0x68 0x2d 0x72 0x73 0x61])
+;; 4 bytes prefix length
+(def ssh-prefix-length [0x00 0x00 0x00 0x07])
 
-;; 4 bytes lenght for e (3 bytes)
+;; 4 bytes public exponent lenght
 (def ssh-exponent-length [0x00 0x00 0x00 0x03])
 
 ;; same informations of pem in a sligthly different format
 (defn openssh-public-key [kp]
   (byte-array
    (concat
-    (map #(unchecked-byte %) ssh-prefix)
+    (map #(unchecked-byte %) ssh-prefix-length)
+    (.getBytes "ssh-rsa")
     (map #(unchecked-byte %) ssh-exponent-length)
     ;; public exponent
     (.toByteArray (:e kp))
