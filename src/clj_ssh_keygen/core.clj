@@ -10,7 +10,7 @@
 (def key-length 2048)
 
 ;; public exponent
-(def e (BigInteger/valueOf 65537))
+(def e (biginteger 65537))
 
 ;; generate a prime number of (key lenght / 2) bits
 (defn- genprime []
@@ -36,8 +36,8 @@
         n (.multiply p q)
         ;; private exponent
         d (.modInverse e (.multiply
-                          (.subtract p BigInteger/ONE)
-                          (.subtract q BigInteger/ONE)))]
+                          (.subtract p (biginteger 1))
+                          (.subtract q (biginteger 1))))]
     {:e e :p p :q q :n n :d d}))
 
 ;; ASN.1 encoding stuff
@@ -50,7 +50,7 @@
   (cond
     (< (count c) 128)[(unchecked-byte (count c))]
     (and (> (count c) 127) (< (count c) 256)) (concat [(unchecked-byte 0x81)] [(unchecked-byte (count c))])
-    :else (concat [(unchecked-byte 0x82)] (.toByteArray (BigInteger/valueOf (count c))))))
+    :else (concat [(unchecked-byte 0x82)] (.toByteArray (biginteger (count c))))))
 
 ;; ASN.1 generic encoding
 (defn- asn1-enc [tag content & [ub]]
@@ -122,7 +122,7 @@
 ;; 4 bytes format
 (defn- openssh-length [c]
   (byte-array
-   (loop [c (.toByteArray (BigInteger/valueOf (count c)))]
+   (loop [c (.toByteArray (biginteger (count c)))]
      (if (= 4 (count c))
        c
        (recur (concat [(unchecked-byte 0x00)] c))))))
@@ -154,7 +154,7 @@
 (defn private-key [key]
   (asn1-seq
    (concat
-    (asn1-int BigInteger/ZERO)
+    (asn1-int (biginteger 0))
     (asn1-seq
      (concat
       (asn1-obj
@@ -164,7 +164,7 @@
      (asn1-seq
       (concat
        ;; version
-       (asn1-int BigInteger/ZERO)
+       (asn1-int (biginteger 0))
        ;; modulus
        (asn1-int (:n key))
        ;; public exponent
@@ -176,9 +176,9 @@
        ;; prime2
        (asn1-int (:q key))
        ;; exponent1
-       (asn1-int (.mod (:d key) (.subtract (:p key) BigInteger/ONE)))
+       (asn1-int (.mod (:d key) (.subtract (:p key) (biginteger 1))))
        ;; exponent2
-       (asn1-int (.mod (:d key) (.subtract (:q key) BigInteger/ONE)))
+       (asn1-int (.mod (:d key) (.subtract (:q key) (biginteger 1))))
        ;; coefficient
        (asn1-int (.modInverse (:q key) (:p key)))))))))
 
