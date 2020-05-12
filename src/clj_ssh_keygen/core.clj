@@ -183,10 +183,10 @@
        (asn1-int (.modInverse (:q key) (:p key)))))))))
 
 (defn write-private-key! [k f]
-  (utils/write-private-key! k f))
+  (utils/write-private-key! (private-key k) f))
 
 (defn write-public-key! [k f]
-  (utils/write-public-key! k f))
+  (utils/write-public-key! (public-key k) f))
 
 (defn write-openssh-public-key! [k f]
-  (utils/write-openssh-public-key! k f))
+  (utils/write-openssh-public-key! (openssh-public-key k) f))

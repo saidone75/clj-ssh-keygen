@@ -19,6 +19,6 @@
 
 (deftest keygen
   (let [key (generate-key)]
-    (write-private-key! (private-key key) "pvt.pem")
-    (write-public-key! (public-key key) "pub.pem")
-    (write-openssh-public-key! (openssh-public-key key) "id_rsa.pub")))
+    (write-private-key! key "pvt.pem")
+    (write-public-key! key "pub.pem")
+    (write-openssh-public-key! key "id_rsa.pub")))
