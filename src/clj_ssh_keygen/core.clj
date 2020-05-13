@@ -53,15 +53,11 @@
     :else (concat [(unchecked-byte 0x82)] (.toByteArray (biginteger (count c))))))
 
 ;; ASN.1 generic encoding
-(defn- asn1-enc [tag content & [ub]]
+(defn- asn1-enc [tag content]
   (byte-array
    (concat
     [(unchecked-byte tag)]
-    (asn1-length (if (nil? ub)
-                   content
-                   (byte-array (concat [(unchecked-byte 0x00)] content))))
-    ;; unused bits for BIT STRING
-    (if (not (nil? ub)) [(unchecked-byte ub)])
+    (asn1-length content)
     content)))
 
 ;; ASN.1 encoding for INTEGER
@@ -83,7 +79,10 @@
 
 ;; ASN.1 encoding for BIT STRING
 (defn- asn1-bit-str [n]
-  (asn1-enc 0x03 n 0x00))
+  (asn1-enc 0x03 (concat
+                  ;; unused bits for padding
+                  [(unchecked-byte 0x00)]
+                  n)))
 
 ;; ASN.1 encoding for OCTET STRING
 (defn- asn1-oct-str [n]
