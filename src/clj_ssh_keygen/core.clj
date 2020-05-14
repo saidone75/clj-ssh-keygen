@@ -12,7 +12,7 @@
 ;; public exponent
 (def e (biginteger 65537))
 
-;; generate a prime number of (key lenght / 2) bits
+;; generate a prime number of (key length / 2) bits
 (defn- genprime [& [kl]]
   (loop [n (BigInteger/probablePrime (quot (or kl key-length) 2) (SecureRandom.))]
     (if (not (= 1 (.mod n e)))
