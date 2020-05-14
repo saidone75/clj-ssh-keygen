@@ -13,11 +13,11 @@
 (def e (biginteger 65537))
 
 ;; generate a prime number of (key lenght / 2) bits
-(defn- genprime []
-  (loop [n (BigInteger/probablePrime (/ key-length 2) (SecureRandom.))]
+(defn- genprime [& [kl]]
+  (loop [n (BigInteger/probablePrime (quot (or kl key-length) 2) (SecureRandom.))]
     (if (not (= 1 (.mod n e)))
       n
-      (recur (BigInteger/probablePrime (/ key-length 2) (SecureRandom.))))))
+      (recur (BigInteger/probablePrime (quot (or kl key-length) 2) (SecureRandom.))))))
 
 ;; key as a quintuplet (e, p, q, n, d)
 ;; see https://www.di-mgt.com.au/rsa_alg.html#keygen for algorithm insights
@@ -31,7 +31,7 @@
         q (loop [q (genprime)]
             (if (= key-length (.bitLength (.multiply p q)))
               q
-              (recur (genprime))))
+              (recur (genprime (if (odd? key-length) (inc key-length) key-length)))))
         ;; modulus
         n (.multiply p q)
         ;; private exponent
