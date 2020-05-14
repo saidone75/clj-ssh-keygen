@@ -6,7 +6,7 @@
 
 (require '[clj-ssh-keygen.utils :as utils])
 
-;; key length
+;; (minimum) key length
 (def key-length 2048)
 
 ;; public exponent
@@ -21,17 +21,18 @@
 
 ;; key as a quintuplet (e, p, q, n, d)
 ;; see https://www.di-mgt.com.au/rsa_alg.html#keygen for algorithm insights
-(defn generate-key []
-  (let [;; public exponent
+(defn generate-key [& [kl]]
+  (let [kl (if (< (or kl key-length) key-length) key-length (or kl key-length))
+        ;; public exponent
         e e
         ;; secret prime 1
-        p (genprime)
+        p (genprime kl)
         ;; secret prime 2
-        ;; making sure that p x q (modulus) is exactly "key-length" bit long
-        q (loop [q (genprime)]
-            (if (= key-length (.bitLength (.multiply p q)))
+        ;; making sure that p x q (modulus) is exactly "kl" bit long
+        q (loop [q (genprime kl)]
+            (if (= kl (.bitLength (.multiply p q)))
               q
-              (recur (genprime (if (odd? key-length) (inc key-length) key-length)))))
+              (recur (genprime (if (odd? kl) (inc kl) kl)))))
         ;; modulus
         n (.multiply p q)
         ;; private exponent
