@@ -48,10 +48,11 @@
 ;;
 ;; compute length of ASN.1 content
 (defn- asn1-length [c]
-  (cond
-    (< (count c) 128)[(unchecked-byte (count c))]
-    (and (> (count c) 127) (< (count c) 256)) (concat [(unchecked-byte 0x81)] [(unchecked-byte (count c))])
-    :else (concat [(unchecked-byte 0x82)] (.toByteArray (biginteger (count c))))))
+  (let [c (count c)]
+    (cond
+      (< c 128)[(unchecked-byte c)]
+      (and (> c 127) (< c 256)) (concat [(unchecked-byte 0x81)] [(unchecked-byte c)])
+      :else (concat [(unchecked-byte 0x82)] (.toByteArray (biginteger c))))))
 
 ;; ASN.1 generic encoding
 (defn- asn1-enc [tag content]
