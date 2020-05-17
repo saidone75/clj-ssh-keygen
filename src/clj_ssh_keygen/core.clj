@@ -14,10 +14,10 @@
 
 ;; generate a prime number of (key length / 2) bits
 (defn- genprime [kl]
-  (loop [n (BigInteger/probablePrime (quot (or kl key-length) 2) (SecureRandom.))]
+  (loop [n (BigInteger/probablePrime (quot kl 2) (SecureRandom.))]
     (if (not (= 1 (.mod n e)))
       n
-      (recur (BigInteger/probablePrime (quot (or kl key-length) 2) (SecureRandom.))))))
+      (recur (BigInteger/probablePrime (quot kl 2) (SecureRandom.))))))
 
 ;; key as a quintuplet (e, p, q, n, d)
 ;; see https://www.di-mgt.com.au/rsa_alg.html#keygen for algorithm insights
@@ -50,7 +50,7 @@
 (defn- asn1-length [c]
   (let [c (count c)]
     (cond
-      (< c 128)[(unchecked-byte c)]
+      (< c 128) [(unchecked-byte c)]
       (and (> c 127) (< c 256)) (concat [(unchecked-byte 0x81)] [(unchecked-byte c)])
       :else (concat [(unchecked-byte 0x82)] (.toByteArray (biginteger c))))))
 
