@@ -6,7 +6,7 @@ Generate RSA PKCS #1 keys **from scratch** (without 3rd party libs) in Clojure, 
 
 *☛ intended for hacking and educational purposes only!*
 
-![public key](https://i.postimg.cc/g2hqR9xz/pubkey.png "public key")
+![public key](https://i.postimg.cc/HLhvSkpk/pubkey.png)
 
 ## Usage
 ```clojure
