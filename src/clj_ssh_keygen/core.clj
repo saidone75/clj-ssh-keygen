@@ -122,11 +122,10 @@
 ;; compute item length as required from OpenSSH
 ;; 4 bytes format
 (defn- openssh-length [c]
-  (byte-array
-   (loop [c (.toByteArray (biginteger (count c)))]
-     (if (= 4 (count c))
-       c
-       (recur (concat [(unchecked-byte 0x00)] c))))))
+  (loop [c (.toByteArray (biginteger (count c)))]
+    (if (= 4 (count c))
+      (byte-array c)
+      (recur (concat [(unchecked-byte 0x00)] c)))))
 
 ;; concat item length with item represented as byte array
 (defn- openssh-item [i]
