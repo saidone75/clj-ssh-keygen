@@ -124,7 +124,7 @@
 (defn- openssh-length [c]
   (loop [c (.toByteArray (biginteger (count c)))]
     (if (= 4 (count c))
-      (byte-array c)
+      c
       (recur (concat [(unchecked-byte 0x00)] c)))))
 
 ;; concat item length with item represented as byte array
@@ -133,10 +133,9 @@
         (cond
           (string? i) (.getBytes i)
           :else (.toByteArray i))]
-    (byte-array
-     (concat
-      (openssh-length ba)
-      ba))))
+    (concat
+     (openssh-length ba)
+     ba)))
 
 ;; same informations of pem in a sligthly different format
 (defn openssh-public-key [key]
