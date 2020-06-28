@@ -15,7 +15,7 @@
 ;; generate a prime number of (key length / 2) bits
 (defn- genprime [kl]
   (loop [n (BigInteger/probablePrime (quot kl 2) (SecureRandom.))]
-    (if (not (= 1 (.mod n e)))
+    (if-not (= 1 (.mod n e))
       n
       (recur (BigInteger/probablePrime (quot kl 2) (SecureRandom.))))))
 
