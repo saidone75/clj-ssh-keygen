@@ -1,6 +1,6 @@
 (ns clj-ssh-keygen.core-test
-  (:require [clojure.test :refer :all]
-            [clj-ssh-keygen.core :refer :all]))
+  (:require [clojure.test :refer [deftest]]
+            [clj-ssh-keygen.core :as core]))
 
 ;; Test keys integrity with openssl
 ;;
@@ -18,7 +18,7 @@
 ;; awesome online tool for debugging ASN.1 https://lapo.it/asn1js/
 
 (deftest keygen
-  (let [key (generate-key)]
-    (write-private-key! key "pvt.pem")
-    (write-public-key! key "pub.pem")
-    (write-openssh-public-key! key "id_rsa.pub")))
+  (let [key (core/generate-key)]
+    (core/write-private-key! key "pvt.pem")
+    (core/write-public-key! key "pub.pem")
+    (core/write-openssh-public-key! key "id_rsa.pub")))
