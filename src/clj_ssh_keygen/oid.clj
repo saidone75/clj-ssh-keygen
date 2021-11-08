@@ -1,12 +1,15 @@
+;; Copyright (c) 2020-2021 Saidone
+
 (ns clj-ssh-keygen.oid
   (:gen-class))
 
 (require '[clojure.string :as str])
 
-(defn- token-to-byte [token]
+(defn- token-to-bytes [token]
   (let [bitlist
         (partition-all
          7
+         ;; prepend zeros to match multiple of 7 length
          (concat (repeat (- 7 (rem (count (Integer/toString token 2)) 7)) \0)
                  (Integer/toString token 2)))]
     (concat
@@ -20,7 +23,8 @@
   (let [tokens (map #(Integer/parseInt %) (str/split oid #"\."))]
     (flatten
      (concat
+      ;; first two tokens encoded separately
       (list (+ (* 40 (first tokens)) (second tokens)))
       (map
-       token-to-byte
+       token-to-bytes
        (drop 2 tokens))))))

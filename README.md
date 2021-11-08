@@ -2,7 +2,7 @@
 
 [![Clojars Project](https://img.shields.io/clojars/v/clj-ssh-keygen.svg)](https://clojars.org/clj-ssh-keygen)
 
-Generate RSA PKCS #1 keys **from scratch** (without 3rd party libs) in Clojure, export **PEM** and **OpenSSH** formats
+Generate RSA PKCS #1 keys **from scratch** and **without 3rd party libs** in Clojure, export **PEM** and **OpenSSH** formats
 
 *☛ intended for hacking and educational purposes only!*
 
@@ -26,6 +26,6 @@ RSA Private-Key: (2345 bit, 2 primes)
 ```
 
 ## License
-Copyright (c) 2020 Saidone
+Copyright (c) 2020-2021 Saidone
 
 Distributed under the MIT License

@@ -1,3 +1,5 @@
+;; Copyright (c) 2020-2021 Saidone
+
 (ns clj-ssh-keygen.core-test
   (:require [clojure.test :refer [deftest]]
             [clj-ssh-keygen.core :as core]))

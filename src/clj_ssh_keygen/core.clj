@@ -1,10 +1,11 @@
-;; Copyright (c) 2020 Saidone
+;; Copyright (c) 2020-2021 Saidone
 
 (ns clj-ssh-keygen.core
   (:import [java.security SecureRandom]) 
   (:gen-class))
 
-(require '[clj-ssh-keygen.utils :as utils])
+(require '[clj-ssh-keygen.utils :as utils]
+         '[clj-ssh-keygen.oid :as oid])
 
 ;; (minimum) key length
 (def key-length 2048)
@@ -92,12 +93,7 @@
 
 ;; PKCS-1 OID value for RSA encryption
 ;; see https://www.alvestrand.no/objectid/1.2.840.113549.1.1.1.html
-(def pkcs1-oid-value [1 2 840 113549 1 1 1])
-
-;; hex byte version of the above
-;; coded "by hand" because of the "pretty odd" encoding logic
-;; https://stackoverflow.com/questions/3376357/how-to-convert-object-identifiers-to-hex-strings
-(def pkcs1-oid-value-hex [0x2A 0x86 0x48 0x86 0xF7 0x0D 0x01 0x01 0x01])
+(def pkcs1-oid "1.2.840.113549.1.1.1")
 
 ;; RSA public key (only modulus (p x q) and public exponent)
 ;; https://tools.ietf.org/html/rfc3447#appendix-A.1.1
@@ -107,7 +103,7 @@
     (asn1-seq
      (concat
       (asn1-obj
-       (map #(unchecked-byte %) pkcs1-oid-value-hex))
+       (map #(unchecked-byte %) (oid/oid-string-to-hex pkcs1-oid)))
       (asn1-null)))
     (asn1-bit-str 
      (asn1-seq
@@ -157,7 +153,7 @@
     (asn1-seq
      (concat
       (asn1-obj
-       (map #(unchecked-byte %) pkcs1-oid-value-hex))
+       (map #(unchecked-byte %) (oid/oid-string-to-hex pkcs1-oid)))
       (asn1-null)))
     (asn1-oct-str
      (asn1-seq
