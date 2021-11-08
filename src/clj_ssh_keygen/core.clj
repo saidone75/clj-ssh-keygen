@@ -103,7 +103,7 @@
     (asn1-seq
      (concat
       (asn1-obj
-       (map #(unchecked-byte %) (oid/oid-string-to-hex pkcs1-oid)))
+       (map #(unchecked-byte %) (oid/oid-string-to-bytes pkcs1-oid)))
       (asn1-null)))
     (asn1-bit-str 
      (asn1-seq
@@ -153,7 +153,7 @@
     (asn1-seq
      (concat
       (asn1-obj
-       (map #(unchecked-byte %) (oid/oid-string-to-hex pkcs1-oid)))
+       (map #(unchecked-byte %) (oid/oid-string-to-bytes pkcs1-oid)))
       (asn1-null)))
     (asn1-oct-str
      (asn1-seq

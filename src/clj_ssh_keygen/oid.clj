@@ -19,7 +19,7 @@
      (list (Integer/valueOf (apply str (cons \0 (last bitlist))) 2)))))
 
 ;; https://stackoverflow.com/questions/3376357/how-to-convert-object-identifiers-to-hex-strings
-(defn oid-string-to-hex [oid]
+(defn oid-string-to-bytes [oid]
   (let [tokens (map #(Integer/parseInt %) (str/split oid #"\."))]
     (flatten
      (concat
