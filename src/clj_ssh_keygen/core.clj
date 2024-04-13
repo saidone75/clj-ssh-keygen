@@ -8,7 +8,7 @@
          '[clj-ssh-keygen.oid :as oid])
 
 ;; (minimum) key length
-(def key-length 2048)
+(def ^:private key-length 2048)
 
 ;; public exponent
 (def ^:private e (biginteger 65537))
@@ -21,8 +21,10 @@
       (recur (BigInteger/probablePrime (quot kl 2) (SecureRandom.))))))
 
 ;; key as a quintuplet (e, p, q, n, d)
-;; see https://www.di-mgt.com.au/rsa_alg.html#keygen for algorithm insights
 (defn generate-key [& [kl]]
+  "Generate a PKCS #1 key of a given `kl` length (in bits, default to 2048 if not specified).
+  The key is returned as a map meant to be used with [[public-key]], [[openssh-public-key]] or [[private-key]] functions.
+  See (https://www.di-mgt.com.au/rsa_alg.html#keygen) for algorithm insights."
   (let [kl (if (< (or kl key-length) key-length) key-length (or kl key-length))
         ;; public exponent
         e e
@@ -98,12 +100,13 @@
 ;; RSA public key (only modulus (p x q) and public exponent)
 ;; https://tools.ietf.org/html/rfc3447#appendix-A.1.1
 (defn public-key [key]
+  "Return a RSA public key representation of a `key`."
   (asn1-seq
     (concat
       (asn1-seq
         (concat
           (asn1-obj
-            (map #(unchecked-byte %) (oid/oid-string-to-bytes pkcs1-oid)))
+            (map #(unchecked-byte %) (oid/oid-to-bytes pkcs1-oid)))
           (asn1-null)))
       (asn1-bit-str
         (asn1-seq
@@ -133,8 +136,9 @@
       (openssh-length ba)
       ba)))
 
-;; same informations of pem in a sligthly different format
+;; same information of pem in a slightly different format
 (defn openssh-public-key [key]
+  "Return an OpenSSH public key representation of a `key`."
   (byte-array
     (concat
       ;; string prefix
@@ -147,13 +151,14 @@
 ;; RSA private key
 ;; https://tools.ietf.org/html/rfc3447#appendix-A.1.2
 (defn private-key [key]
+  "Return a RSA private key representation of a `key`."
   (asn1-seq
     (concat
       (asn1-int (biginteger 0))
       (asn1-seq
         (concat
           (asn1-obj
-            (map #(unchecked-byte %) (oid/oid-string-to-bytes pkcs1-oid)))
+            (map #(unchecked-byte %) (oid/oid-to-bytes pkcs1-oid)))
           (asn1-null)))
       (asn1-oct-str
         (asn1-seq
@@ -178,10 +183,13 @@
             (asn1-int (.modInverse (:q key) (:p key)))))))))
 
 (defn write-private-key! [k f]
+  "Get the RSA private key from `k` and write it to a file named `f`."
   (utils/write-private-key! (private-key k) f))
 
 (defn write-public-key! [k f]
+  "Get the RSA public key from `k` and write it to a file named `f`."
   (utils/write-public-key! (public-key k) f))
 
 (defn write-openssh-public-key! [k f]
+  "Get the OpenSSH public key from `k` and write it to a file named `f`."
   (utils/write-openssh-public-key! (openssh-public-key k) f))
