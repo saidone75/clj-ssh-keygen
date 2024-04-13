@@ -1,7 +1,7 @@
 ;; Copyright (c) 2020-2021 Saidone
 
 (ns clj-ssh-keygen.core
-  (:import [java.security SecureRandom]) 
+  (:import [java.security SecureRandom])
   (:gen-class))
 
 (require '[clj-ssh-keygen.utils :as utils]
@@ -11,7 +11,7 @@
 (def key-length 2048)
 
 ;; public exponent
-(def e (biginteger 65537))
+(def ^:private e (biginteger 65537))
 
 ;; generate a prime number of (key length / 2) bits
 (defn- genprime [kl]
@@ -38,8 +38,8 @@
         n (.multiply p q)
         ;; private exponent
         d (.modInverse e (.multiply
-                          (.subtract p (biginteger 1))
-                          (.subtract q (biginteger 1))))]
+                           (.subtract p (biginteger 1))
+                           (.subtract q (biginteger 1))))]
     {:e e :p p :q q :n n :d d}))
 
 ;; ASN.1 encoding stuff
@@ -58,10 +58,10 @@
 ;; ASN.1 generic encoding
 (defn- asn1-enc [tag content]
   (byte-array
-   (concat
-    [(unchecked-byte tag)]
-    (asn1-length content)
-    content)))
+    (concat
+      [(unchecked-byte tag)]
+      (asn1-length content)
+      content)))
 
 ;; ASN.1 encoding for INTEGER
 (defn- asn1-int [n]
@@ -78,14 +78,14 @@
 ;; ASN.1 encoding for NULL
 (defn- asn1-null []
   (concat
-   [(unchecked-byte 0x05) (unchecked-byte 0x00)]))
+    [(unchecked-byte 0x05) (unchecked-byte 0x00)]))
 
 ;; ASN.1 encoding for BIT STRING
 (defn- asn1-bit-str [n]
   (asn1-enc 0x03 (concat
-                  ;; unused bits for padding
-                  [(unchecked-byte 0x00)]
-                  n)))
+                   ;; unused bits for padding
+                   [(unchecked-byte 0x00)]
+                   n)))
 
 ;; ASN.1 encoding for OCTET STRING
 (defn- asn1-oct-str [n]
@@ -93,25 +93,25 @@
 
 ;; PKCS-1 OID value for RSA encryption
 ;; see https://www.alvestrand.no/objectid/1.2.840.113549.1.1.1.html
-(def pkcs1-oid "1.2.840.113549.1.1.1")
+(def ^:private pkcs1-oid "1.2.840.113549.1.1.1")
 
 ;; RSA public key (only modulus (p x q) and public exponent)
 ;; https://tools.ietf.org/html/rfc3447#appendix-A.1.1
 (defn public-key [key]
   (asn1-seq
-   (concat
-    (asn1-seq
-     (concat
-      (asn1-obj
-       (map #(unchecked-byte %) (oid/oid-string-to-bytes pkcs1-oid)))
-      (asn1-null)))
-    (asn1-bit-str 
-     (asn1-seq
-      (concat
-       ;; modulus
-       (asn1-int (:n key))
-       ;; public exponent
-       (asn1-int (:e key))))))))
+    (concat
+      (asn1-seq
+        (concat
+          (asn1-obj
+            (map #(unchecked-byte %) (oid/oid-string-to-bytes pkcs1-oid)))
+          (asn1-null)))
+      (asn1-bit-str
+        (asn1-seq
+          (concat
+            ;; modulus
+            (asn1-int (:n key))
+            ;; public exponent
+            (asn1-int (:e key))))))))
 
 ;; OpenSSH public key (id_rsa.pub) more familiar for ssh users
 ;; 
@@ -130,52 +130,52 @@
           (string? i) (.getBytes i)
           :else (.toByteArray i))]
     (concat
-     (openssh-length ba)
-     ba)))
+      (openssh-length ba)
+      ba)))
 
 ;; same informations of pem in a sligthly different format
 (defn openssh-public-key [key]
   (byte-array
-   (concat
-    ;; string prefix
-    (openssh-item "ssh-rsa")
-    ;; public exponent
-    (openssh-item (:e key))
-    ;; modulus
-    (openssh-item (:n key)))))
+    (concat
+      ;; string prefix
+      (openssh-item "ssh-rsa")
+      ;; public exponent
+      (openssh-item (:e key))
+      ;; modulus
+      (openssh-item (:n key)))))
 
 ;; RSA private key
 ;; https://tools.ietf.org/html/rfc3447#appendix-A.1.2
 (defn private-key [key]
   (asn1-seq
-   (concat
-    (asn1-int (biginteger 0))
-    (asn1-seq
-     (concat
-      (asn1-obj
-       (map #(unchecked-byte %) (oid/oid-string-to-bytes pkcs1-oid)))
-      (asn1-null)))
-    (asn1-oct-str
-     (asn1-seq
-      (concat
-       ;; version
-       (asn1-int (biginteger 0))
-       ;; modulus
-       (asn1-int (:n key))
-       ;; public exponent
-       (asn1-int (:e key))
-       ;; private exponent
-       (asn1-int (:d key))
-       ;; prime1
-       (asn1-int (:p key))
-       ;; prime2
-       (asn1-int (:q key))
-       ;; exponent1
-       (asn1-int (.mod (:d key) (.subtract (:p key) (biginteger 1))))
-       ;; exponent2
-       (asn1-int (.mod (:d key) (.subtract (:q key) (biginteger 1))))
-       ;; coefficient
-       (asn1-int (.modInverse (:q key) (:p key)))))))))
+    (concat
+      (asn1-int (biginteger 0))
+      (asn1-seq
+        (concat
+          (asn1-obj
+            (map #(unchecked-byte %) (oid/oid-string-to-bytes pkcs1-oid)))
+          (asn1-null)))
+      (asn1-oct-str
+        (asn1-seq
+          (concat
+            ;; version
+            (asn1-int (biginteger 0))
+            ;; modulus
+            (asn1-int (:n key))
+            ;; public exponent
+            (asn1-int (:e key))
+            ;; private exponent
+            (asn1-int (:d key))
+            ;; prime1
+            (asn1-int (:p key))
+            ;; prime2
+            (asn1-int (:q key))
+            ;; exponent1
+            (asn1-int (.mod (:d key) (.subtract (:p key) (biginteger 1))))
+            ;; exponent2
+            (asn1-int (.mod (:d key) (.subtract (:q key) (biginteger 1))))
+            ;; coefficient
+            (asn1-int (.modInverse (:q key) (:p key)))))))))
 
 (defn write-private-key! [k f]
   (utils/write-private-key! (private-key k) f))
