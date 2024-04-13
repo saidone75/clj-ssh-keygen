@@ -26,6 +26,6 @@ RSA Private-Key: (2345 bit, 2 primes)
 ```
 
 ## License
-Copyright (c) 2020-2021 Saidone
+Copyright (c) 2020-2024 Saidone
 
 Distributed under the MIT License

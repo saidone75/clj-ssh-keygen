@@ -1,4 +1,4 @@
-;; Copyright (c) 2020-2021 Saidone
+;; Copyright (c) 2020-2024 Saidone
 
 (ns clj-ssh-keygen.oid
   (:gen-class))
