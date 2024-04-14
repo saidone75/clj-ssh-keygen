@@ -1,4 +1,4 @@
-(defproject clj-ssh-keygen "0.2.4-SNAPSHOT"
+(defproject clj-ssh-keygen "0.2.4"
   :description "Generate RSA PKCS #1 key-pairs from scratch in Clojure"
   :url "https://github.com/saidone75/clj-ssh-keygen"
   :license {:name "MIT"
