@@ -23,7 +23,7 @@
 ;; key as a quintuplet (e, p, q, n, d)
 (defn generate-key
   "Generate a PKCS #1 key of a given `kl` length (in bits, default to 2048 if not specified).
-  The key is returned as a map meant to be used with [[public-key]], [[openssh-public-key]] or [[private-key]] functions.
+  The key is returned as a map meant to be used with [[public-key]], [[openssh-public-key]] or [[private-key]] functions.\\
   See https://www.di-mgt.com.au/rsa_alg.html#keygen for algorithm insights."
   [& [kl]]
   (let [kl (if (< (or kl key-length) key-length) key-length (or kl key-length))
