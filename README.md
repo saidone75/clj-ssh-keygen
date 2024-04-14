@@ -1,6 +1,7 @@
 # clj-ssh-keygen
 
 [![Clojars Project](https://img.shields.io/clojars/v/clj-ssh-keygen.svg)](https://clojars.org/clj-ssh-keygen)
+[![cljdoc badge](https://cljdoc.org/badge/clj-ssh-keygen/clj-ssh-keygen)](https://cljdoc.org/d/clj-ssh-keygen/clj-ssh-keygen)
 
 Generate RSA PKCS #1 keys **from scratch** and **without 3rd party libs** in Clojure, export **PEM** and **OpenSSH** formats
 
