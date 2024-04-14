@@ -13,8 +13,9 @@
       #(apply str %)
       (partition-all 72 s))))
 
-(defn write-public-key! [k f]
+(defn write-public-key!
   "Encode a RSA public key `k` to base64, wrap to 72 characters and write it to a file named `f`."
+  [k f]
   (spit f
         (str
           "-----BEGIN PUBLIC KEY-----\n"
@@ -22,8 +23,9 @@
             (.encodeToString (Base64/getEncoder) k))
           "-----END PUBLIC KEY-----\n")))
 
-(defn write-private-key! [k f]
+(defn write-private-key!
   "Encode a RSA private key `k` to base64, wrap to 72 characters and write it to a file named `f`."
+  [k f]
   (spit f
         (str
           "-----BEGIN PRIVATE KEY-----\n"
@@ -31,8 +33,9 @@
             (.encodeToString (Base64/getEncoder) k))
           "-----END PRIVATE KEY-----\n")))
 
-(defn write-openssh-public-key! [k f]
+(defn write-openssh-public-key!
   "Encode an OpenSSH public key `k` to base64 and write it to a file named `f`."
+  [k f]
   (spit f
         (str
           "ssh-rsa "

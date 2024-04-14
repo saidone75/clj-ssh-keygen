@@ -21,10 +21,11 @@
       (recur (BigInteger/probablePrime (quot kl 2) (SecureRandom.))))))
 
 ;; key as a quintuplet (e, p, q, n, d)
-(defn generate-key [& [kl]]
+(defn generate-key
   "Generate a PKCS #1 key of a given `kl` length (in bits, default to 2048 if not specified).
   The key is returned as a map meant to be used with [[public-key]], [[openssh-public-key]] or [[private-key]] functions.
   See (https://www.di-mgt.com.au/rsa_alg.html#keygen) for algorithm insights."
+  [& [kl]]
   (let [kl (if (< (or kl key-length) key-length) key-length (or kl key-length))
         ;; public exponent
         e e
@@ -99,8 +100,9 @@
 
 ;; RSA public key (only modulus (p x q) and public exponent)
 ;; https://tools.ietf.org/html/rfc3447#appendix-A.1.1
-(defn public-key [key]
+(defn public-key
   "Return a RSA public key representation of a `key`."
+  [key]
   (asn1-seq
     (concat
       (asn1-seq
@@ -137,8 +139,9 @@
       ba)))
 
 ;; same information of pem in a slightly different format
-(defn openssh-public-key [key]
+(defn openssh-public-key
   "Return an OpenSSH public key representation of a `key`."
+  [key]
   (byte-array
     (concat
       ;; string prefix
@@ -150,8 +153,9 @@
 
 ;; RSA private key
 ;; https://tools.ietf.org/html/rfc3447#appendix-A.1.2
-(defn private-key [key]
+(defn private-key
   "Return a RSA private key representation of a `key`."
+  [key]
   (asn1-seq
     (concat
       (asn1-int (biginteger 0))
@@ -182,14 +186,17 @@
             ;; coefficient
             (asn1-int (.modInverse (:q key) (:p key)))))))))
 
-(defn write-private-key! [k f]
+(defn write-private-key!
   "Get the RSA private key from `k` and write it to a file named `f`."
+  [k f]
   (utils/write-private-key! (private-key k) f))
 
-(defn write-public-key! [k f]
+(defn write-public-key!
   "Get the RSA public key from `k` and write it to a file named `f`."
+  [k f]
   (utils/write-public-key! (public-key k) f))
 
-(defn write-openssh-public-key! [k f]
+(defn write-openssh-public-key!
   "Get the OpenSSH public key from `k` and write it to a file named `f`."
+  [k f]
   (utils/write-openssh-public-key! (openssh-public-key k) f))
