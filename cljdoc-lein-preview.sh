@@ -9,7 +9,7 @@ VERSION=$(cat project.clj | grep defproject | cut -d " " -f 3 | tr -d '"')
 
 echo "Generating cljdoc for $PROJECT-$VERSION"
 
-# clean up previous run db
+# clean up previous run
 sudo rm -rf /tmp/cljdoc
 mkdir -p /tmp/cljdoc
 
@@ -20,7 +20,7 @@ lein install
 # ingest into cljdoc
 docker run --rm \
   -v $(pwd):/$PROJECT \
-  -v "$HOME/.m2:/root/.m2" \
+  -v $HOME/.m2:/root/.m2 \
   -v /tmp/cljdoc:/app/data \
   --entrypoint clojure \
   cljdoc/cljdoc -Sforce -M:cli ingest \
@@ -29,4 +29,4 @@ docker run --rm \
     --git /$PROJECT \
 
 # start server
-docker run --rm -p 8000:8000 -v /tmp/cljdoc:/app/data -v "$HOME/.m2:/root/.m2" cljdoc/cljdoc
+docker run --rm -p 8000:8000 -v /tmp/cljdoc:/app/data -v $HOME/.m2:/root/.m2 cljdoc/cljdoc
