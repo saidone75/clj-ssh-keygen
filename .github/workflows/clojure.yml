@@ -12,8 +12,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Install dependencies
-      run: lein deps
-    - name: Run tests
-      run: lein test
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Install Clojure tools (Leiningen)
+        uses: DeLaGuardo/setup-clojure@13.4
+        with:
+          lein: latest
+
+      - name: Download deps
+        run: lein deps
+
+      - name: Compile
+        run: lein compile
